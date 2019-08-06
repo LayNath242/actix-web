@@ -1,0 +1,26 @@
+[package]
+name = "koompi"
+version = "2.0.0"
+authors = ["lay_nath"]
+edition = "2018"
+
+[dependencies]
+actix = "0.8"
+actix-web = "1.0.5"
+diesel = { version = "1.4.2", features = ["postgres", "r2d2", "chrono"] }
+dotenv = "0.14.1"
+dotenv_codegen="0.14.1"
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
+jsonwebtoken = "6"
+bcrypt = "0.5.0"
+chrono = { version = "0.4.7", features = ["serde"] }
+csrf-token = { git = "https://github.com/3dom-co-jp/csrf-token.git", branch="v0.2.x" }
+hex = "0.3.2"
+env_logger = "0.6.2"
+log = "0.4.7"
+actix-http = "0.2.7"
+actix-identity = "0.1.0"
+actix-cors = "0.1.0"
+diesel_full_text_search = "1.0.1"
