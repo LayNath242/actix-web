@@ -4,6 +4,7 @@ pub mod models;
 pub mod handlers;
 pub mod errors;
 pub mod utils;
+pub mod upload;
 
 #[macro_use]
 extern crate diesel;
@@ -37,6 +38,7 @@ use actix_cors::Cors;
 use csrf_token::CsrfTokenGenerator;
 use chrono::Duration;
 use db_connection::establish_connection;
+use std::cell::Cell;
 
 fn main() {
     std::env::set_var("RUST_LOG", "actix_web=debug");
@@ -67,7 +69,7 @@ fn main() {
                                       header::ACCEPT,
                                       csrf_token_header.clone()])
                 .expose_headers(vec![csrf_token_header.clone()])
-                .max_age(36000)
+                .max_age(3600)
         )
         .data(
             CsrfTokenGenerator::new(
@@ -76,6 +78,7 @@ fn main() {
             )
         )
         .data(establish_connection())
+        .data(Cell::new(0usize))
         .service(
             web::resource("/roles")
                 .route(web::get().to(handlers::roles::index))
@@ -93,13 +96,13 @@ fn main() {
                 .route(web::post().to(handlers::register::register))
         )
         .service(
-            web::resource("/auth")
+            web::resource("/login")
                 .route(web::post().to(handlers::authentication::login))
                 .route(web::delete().to(handlers::authentication::logout))
         )
 
         .service(
-            web::resource("/comment")
+            web::resource("/comments")
                 .route(web::get().to(handlers::comments::index))
                 .route(web::post().to(handlers::comments::create))
         )
@@ -109,7 +112,25 @@ fn main() {
                 .route(web::get().to(handlers::comments::show))
                 .route(web::patch().to(handlers::comments::update))
                 .route(web::delete().to(handlers::comments::destroy))
+        ) .service(
+            web::resource("/categories")
+                .route(web::get().to(handlers::categories::index))
+                .route(web::post().to(handlers::categories::create))
         )
+        
+        .service(
+            web::resource("/category/{id}")
+                .route(web::get().to(handlers::categories::show))
+                .route(web::patch().to(handlers::categories::update))
+                .route(web::delete().to(handlers::categories::destroy))
+        )
+        .service(
+            web::resource("/images")
+                // .route(web::get().to(handlers::categories::index))
+                .route(web::post().to_async(upload::image::images_uploader))
+        )
+        
+
     )
     .bind("127.0.0.1:8080").unwrap()
     .start();

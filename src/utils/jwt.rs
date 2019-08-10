@@ -6,14 +6,12 @@ use actix_web::HttpResponse;
 struct Claims {
     sub: i32,
     name: String,
-    fullname: String,
     exp: usize
 }
 
 pub struct SlimUser {
     pub id: i32,
     pub email: String,
-    pub fullname: String
 }
 
 impl From<Claims> for SlimUser {
@@ -21,24 +19,22 @@ impl From<Claims> for SlimUser {
         SlimUser {
             id: claims.sub,
             email: claims.name,
-            fullname: claims.fullname
         }
     }
 }
 
 impl Claims {
-    fn with_email(id: i32, email: &str, fullname: &str) -> Self {
+    fn id_with_email(id: i32, email: &str) -> Self {
         Claims {
             sub: id,
             name: email.into(),
-            fullname: fullname.into(),
             exp: (Local::now() + Duration::hours(24)).timestamp() as usize
         }
     }
 }
 
-pub fn create_token(id: i32, email: &str, fullname: &str) -> Result<String, HttpResponse> {
-    let claims = Claims::with_email(id, email, fullname);
+pub fn create_token(id: i32, email: &str) -> Result<String, HttpResponse> {
+    let claims = Claims::id_with_email(id, email);
     encode(&Header::default(), &claims, get_secret())
         .map_err(|e| HttpResponse::InternalServerError().json(e.to_string()))
 }

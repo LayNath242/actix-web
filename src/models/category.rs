@@ -1,98 +1,99 @@
 use diesel::PgConnection;
 use chrono::NaiveDateTime;
 use crate::models::user::User;
-use crate::schema::{comments, users};
+use crate::schema::{categories, users};
+
 
 #[derive(Queryable, Serialize, Deserialize, Debug, PartialEq)]
-pub struct Comment {
+pub struct Category {
     pub id: i32,
-    pub description: String,
+    pub title: String,
     pub user_id: i32,
-    pub created_at: Option<NaiveDateTime>,
+    pub created_at: Option<NaiveDateTime>, 
 }
+
 
 #[derive(Insertable, Deserialize, Serialize, AsChangeset, Debug, Clone, Associations ,PartialEq)]
 #[belongs_to(User)]
-#[table_name="comments"]
-pub struct NewComment {
-    pub description: String,
-    pub user_id: Option<i32>,
-    pub created_at: Option<NaiveDateTime>,
+#[table_name="categories"]
+pub struct NewCategory {
+    pub title: String,
+    pub user_id: i32,
+    pub created_at: Option<NaiveDateTime>, 
 }
 
 
 #[derive(Queryable, Serialize, Deserialize, Debug)]
-pub struct UserComment {
+pub struct CategoryByUser {
     pub id: i32,
-    pub description: String,
+    pub title: String,
     pub name: String,
     pub created_at: Option<NaiveDateTime>,
 }
 
+
 type Columns = (
-    comments::id,
-    comments::description,
+    categories::id,
+    categories::title,
     users::fullname,
-    comments::created_at,
+    categories::created_at,
     
 );
 
 const COLUMNS: Columns = (
-    comments::id,
-    comments::description,
+    categories::id,
+    categories::title,
     users::fullname,
-    comments::created_at,  
+    categories::created_at, 
 );
 
+
 #[derive(Serialize, Deserialize)]
-pub struct Commentlist(pub Vec<UserComment>);
+pub struct Categorieslist(pub Vec<CategoryByUser>);
 
 
-
-impl Commentlist {
+impl Categorieslist {
     pub fn list(connection: &PgConnection) -> Self {
         use diesel::RunQueryDsl;
         use diesel::QueryDsl;
-        // use crate::schema::comments::dsl::*;
+        // use crate::schema::categories::dsl::*;
 
         let result = 
             users::table
-                .inner_join(comments::table)
+                .inner_join(categories::table)
                 .select(COLUMNS)
-                .load::<UserComment>(connection)
-                
-                .expect("Error loading comment");
-
-        Commentlist(result)
+                .load::<CategoryByUser>(connection)           
+                .expect("Error loading data");
+        Categorieslist(result)
     }
 }
 
 
-impl NewComment {
+impl NewCategory {
      pub fn create(&self, connection: &PgConnection) ->
-        Result<Comment, diesel::result::Error> {
+        Result<Category, diesel::result::Error> {
             use diesel::RunQueryDsl;
 
-                diesel::insert_into(comments::table)
+                diesel::insert_into(categories::table)
                     .values(self)
                     .get_result(connection)
         }
 }
 
-impl Comment {
-    pub fn find(id: &i32, connection: &PgConnection) -> Result<Comment, diesel::result::Error>{
+impl Category {
+    pub fn find(id: &i32, connection: &PgConnection) -> Result<Category, diesel::result::Error>{
         use diesel::RunQueryDsl;
         use diesel::QueryDsl;
 
-        comments::table.find(id).first(connection)
+        categories::table.find(id).first(connection)
     }
 
     pub fn destroy(id: &i32, connection: &PgConnection) -> Result<(), diesel::result::Error> {
         use diesel::QueryDsl;
         use diesel::RunQueryDsl;
-        use crate::schema::comments::dsl;
+        use crate::schema::categories::dsl;
 
-        diesel::delete(dsl::comments
+        diesel::delete(dsl::categories
         .find(id))
         .execute(connection)?;
         Ok(())
@@ -100,15 +101,15 @@ impl Comment {
 
 
     pub fn update(id: &i32,
-                  new_comment : &NewComment, 
+                  new_category : &NewCategory, 
                   connection: &PgConnection) 
                   -> Result<(), diesel::result::Error>{
         use diesel::RunQueryDsl;
         use diesel::QueryDsl;
-        use crate::schema::comments::dsl;
+        use crate::schema::categories::dsl;
 
-        diesel::update(dsl::comments.find(id))
-            .set(new_comment)
+        diesel::update(dsl::categories.find(id))
+            .set(new_category)
             .execute(connection)?;
             Ok(())
     }   

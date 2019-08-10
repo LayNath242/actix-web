@@ -2,6 +2,7 @@ pub mod roles;
 pub mod register;
 pub mod authentication;
 pub mod comments;
+pub mod categories;
 
 
 use actix_web::{ Result, web };

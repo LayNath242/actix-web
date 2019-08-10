@@ -27,7 +27,7 @@ pub fn login(auth_user: web::Json<AuthUser>,
             }
         })?;
 
-    let token = create_token(user.id,&user.email, &user.fullname)?;
+    let token = create_token(user.id,&user.email)?;
     
     id.remember(token);
     let response =

@@ -32,7 +32,7 @@ pub struct NewUser {
     pub avatar: Option<String>,
     pub biography: Option<String>,
     pub created_at: NaiveDateTime,
-    pub role_id: i32,
+    pub role_id: Option<i32>,
 }
 
 
@@ -108,7 +108,7 @@ pub struct RegisterUser {
     pub password_confirmation: String,
     pub avatar: Option<String>,
     pub biography: Option<String>,
-    pub role_id: i32,
+    pub role_id: Option<i32>,
 }
 
 impl RegisterUser {
